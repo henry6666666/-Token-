@@ -2,270 +2,262 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<title>🔥 Token 焚烧炉</title>
+<title>🔥 Token 焚烧炉 v2</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: #0a0a0f;
-    color: #e0e0e0;
+    background: #0a0a0f; color: #e0e0e0;
     font-family: 'SF Mono', Menlo, Consolas, monospace;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
+    min-height: 100vh; padding: 2rem;
+    display: flex; flex-direction: column; align-items: center;
   }
-  .container { text-align: center; z-index: 2; }
   h1 {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    background: linear-gradient(90deg, #ff6b00, #ff0044, #ff6b00);
+    font-size: 2rem; margin-bottom: 1.5rem;
+    background: linear-gradient(90deg,#ff6b00,#ff0044,#ff6b00);
     background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     animation: shimmer 2s linear infinite;
   }
   @keyframes shimmer { to { background-position: 200% center; } }
 
+  .panel {
+    background: #14141f; border: 1px solid #2a2a3a;
+    border-radius: 12px; padding: 1.5rem;
+    width: 620px; max-width: 95vw; margin-bottom: 1.5rem;
+  }
+  .row { display: flex; gap: 1rem; margin-bottom: 1rem; }
+  .field { flex: 1; display: flex; flex-direction: column; }
+  .field label {
+    font-size: 0.7rem; color: #888; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 0.4rem;
+  }
+  .field input, .field select, .field textarea {
+    background: #0f0f18; border: 1px solid #2a2a3a;
+    color: #e0e0e0; padding: 0.6rem 0.8rem;
+    border-radius: 8px; font-family: inherit; font-size: 0.85rem;
+    outline: none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: #ff6b00;
+  }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .hint { font-size: 0.65rem; color: #555; margin-top: 0.3rem; }
+
   .stats {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin: 2rem 0;
-    min-width: 420px;
+    display: grid; grid-template-columns: repeat(2,1fr);
+    gap: 1rem; margin-bottom: 1.5rem; width: 620px; max-width: 95vw;
   }
   .stat {
-    background: #14141f;
-    border: 1px solid #2a2a3a;
-    border-radius: 12px;
-    padding: 1rem 1.5rem;
+    background: #14141f; border: 1px solid #2a2a3a;
+    border-radius: 12px; padding: 1rem 1.5rem;
   }
-  .stat .label { font-size: 0.75rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
-  .stat .value { font-size: 2rem; font-weight: bold; margin-top: 0.3rem; }
+  .stat .label { font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+  .stat .value { font-size: 1.8rem; font-weight: bold; margin-top: 0.3rem; }
   .tokens { color: #ff6b00; }
   .cost { color: #ff0044; }
   .calls { color: #00d4ff; }
   .rate { color: #00ff88; }
 
-  .controls { display: flex; gap: 1rem; margin-top: 1rem; }
+  .controls { display: flex; gap: 1rem; margin-bottom: 1rem; }
   button {
-    background: #1a1a2a;
-    color: #e0e0e0;
-    border: 1px solid #3a3a4a;
-    padding: 0.9rem 2rem;
-    font-size: 1rem;
-    font-family: inherit;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
+    background: #1a1a2a; color: #e0e0e0;
+    border: 1px solid #3a3a4a; padding: 0.9rem 2rem;
+    font-size: 1rem; font-family: inherit;
+    border-radius: 10px; cursor: pointer; transition: all 0.2s;
   }
   button:hover { background: #2a2a3a; border-color: #ff6b00; }
   button.active {
-    background: linear-gradient(135deg, #ff6b00, #ff0044);
-    border-color: transparent;
-    color: white;
+    background: linear-gradient(135deg,#ff6b00,#ff0044);
+    border-color: transparent; color: white;
     animation: pulse 1s ease-in-out infinite;
   }
-  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+  @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
 
   .log {
-    margin-top: 1.5rem;
-    width: 600px;
-    height: 120px;
-    overflow-y: auto;
-    background: #0f0f18;
-    border: 1px solid #2a2a3a;
-    border-radius: 8px;
-    padding: 0.8rem;
-    font-size: 0.75rem;
-    color: #888;
-    text-align: left;
+    width: 620px; max-width: 95vw; height: 140px; overflow-y: auto;
+    background: #0f0f18; border: 1px solid #2a2a3a;
+    border-radius: 8px; padding: 0.8rem;
+    font-size: 0.72rem; color: #888; text-align: left;
   }
   .log div { margin-bottom: 2px; }
   .log .ok { color: #00ff88; }
   .log .err { color: #ff0044; }
 
-  /* 火焰背景 */
   .fire {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 40vh;
+    position: fixed; bottom: 0; left: 0; right: 0; height: 40vh;
     pointer-events: none;
     background: radial-gradient(ellipse at 50% 100%, rgba(255,107,0,0.3), transparent 70%);
-    opacity: 0;
-    transition: opacity 0.5s;
-    z-index: 1;
+    opacity: 0; transition: opacity 0.5s; z-index: -1;
   }
   .fire.on { opacity: 1; animation: flicker 0.3s infinite alternate; }
-  @keyframes flicker { from { opacity: 0.7; } to { opacity: 1; } }
-
-  .warning {
-    margin-top: 1rem;
-    font-size: 0.75rem;
-    color: #ff6b00;
-    max-width: 500px;
-  }
+  @keyframes flicker { from{opacity:0.7;} to{opacity:1;} }
 </style>
 </head>
 <body>
 
 <div class="fire" id="fire"></div>
 
-<div class="container">
-  <h1>🔥 TOKEN 焚烧炉 🔥</h1>
-  <p style="color:#666;font-size:0.85rem">激活后疯狂请求，实时烧钱</p>
+<h1>🔥 TOKEN 焚烧炉 v2 🔥</h1>
 
-  <div class="stats">
-    <div class="stat">
-      <div class="label">已烧 Tokens</div>
-      <div class="value tokens" id="tokens">0</div>
+<!-- ========== 配置面板：全部网页里填 ========== -->
+<div class="panel">
+  <div class="row">
+    <div class="field" style="flex:2">
+      <label>API 地址</label>
+      <input id="apiUrl" value="https://api.openai.com/v1/chat/completions">
+      <div class="hint">OpenAI 官方 / 中转站 / DeepSeek 都填这里</div>
     </div>
-    <div class="stat">
-      <div class="label">预估花费 (USD)</div>
-      <div class="value cost" id="cost">$0.0000</div>
-    </div>
-    <div class="stat">
-      <div class="label">API 调用次数</div>
-      <div class="value calls" id="calls">0</div>
-    </div>
-    <div class="stat">
-      <div class="label">Token/秒</div>
-      <div class="value rate" id="rate">0</div>
+    <div class="field">
+      <label>模型</label>
+      <input id="model" value="gpt-4o-mini">
     </div>
   </div>
 
-  <div class="controls">
-    <button id="toggle">▶ 激活焚烧</button>
-    <button id="reset">↺ 重置</button>
+  <div class="row">
+    <div class="field" style="flex:2">
+      <label>API Key</label>
+      <input id="apiKey" type="password" placeholder="sk-...">
+      <div class="hint">只存在当前页面内存里，刷新即清空，不会上传到任何地方</div>
+    </div>
   </div>
 
-  <div class="log" id="log"></div>
+  <div class="row">
+    <div class="field">
+      <label>输入单价 ($/1M)</label>
+      <input id="priceInput" type="number" step="0.01" value="0.15">
+    </div>
+    <div class="field">
+      <label>输出单价 ($/1M)</label>
+      <input id="priceOutput" type="number" step="0.01" value="0.60">
+    </div>
+    <div class="field">
+      <label>每次输出上限</label>
+      <input id="maxTokens" type="number" value="200">
+    </div>
+  </div>
 
-  <p class="warning">
-    ⚠️ 本页面会真实调用 API 并产生费用。请使用最便宜的模型，并在服务商后台设置消费上限。
-  </p>
+  <div class="row">
+    <div class="field">
+      <label>并发数</label>
+      <input id="concurrency" type="number" value="3" min="1" max="50">
+    </div>
+    <div class="field">
+      <label>间隔 (ms)</label>
+      <input id="intervalMs" type="number" value="300" min="0">
+    </div>
+    <div class="field">
+      <label>花费上限 ($)</label>
+      <input id="costLimit" type="number" step="0.01" value="1.00">
+      <div class="hint">到了自动停，保命用</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>提示词（越长输入越贵）</label>
+    <textarea id="prompt">请用至少200字详细描述火焰的颜色、温度、形状和哲学意义。</textarea>
+  </div>
 </div>
 
+<!-- ========== 统计 ========== -->
+<div class="stats">
+  <div class="stat"><div class="label">已烧 Tokens</div><div class="value tokens" id="tokens">0</div></div>
+  <div class="stat"><div class="label">预估花费 (USD)</div><div class="value cost" id="cost">$0.0000</div></div>
+  <div class="stat"><div class="label">API 调用次数</div><div class="value calls" id="calls">0</div></div>
+  <div class="stat"><div class="label">Token/秒</div><div class="value rate" id="rate">0</div></div>
+</div>
+
+<div class="controls">
+  <button id="toggle">▶ 激活焚烧</button>
+  <button id="reset">↺ 重置</button>
+</div>
+
+<div class="log" id="log"></div>
+
 <script>
-// ==================== 配置区 ====================
-const CONFIG = {
-  // 你的 API 端点（示例用 OpenAI 兼容格式）
-  apiUrl: 'https://api.openai.com/v1/chat/completions',
-  apiKey: 'sk-你的key',          // ← 填你的 key
-  model: 'gpt-4o-mini',          // ← 用最便宜的！
-
-  // 计费（美元 / 1M tokens），按你实际模型改
-  priceInput: 0.15,
-  priceOutput: 0.60,
-
-  // 每次请求让模型输出多少 token（越大越烧）
-  maxTokens: 200,
-
-  // 并发数（同时发几个请求，别太大，容易被限流）
-  concurrency: 3,
-
-  // 每次请求之间的间隔（毫秒），越小烧得越快
-  intervalMs: 300,
-
-  // 让模型重复的“废话提示词”，越长输入越贵
-  prompt: '请用至少200字详细描述火焰的颜色、温度、形状和哲学意义。',
-};
-// ==============================================
-
-let state = {
-  running: false,
-  tokens: 0,
-  cost: 0,
-  calls: 0,
-  recentTokens: [], // 用于计算速率
-};
-
+let state = { running:false, tokens:0, cost:0, calls:0, recent:[] };
 const $ = id => document.getElementById(id);
 
-function log(msg, cls = '') {
+function cfg() {
+  return {
+    apiUrl: $('apiUrl').value.trim(),
+    apiKey: $('apiKey').value.trim(),
+    model: $('model').value.trim(),
+    priceInput: parseFloat($('priceInput').value) || 0,
+    priceOutput: parseFloat($('priceOutput').value) || 0,
+    maxTokens: parseInt($('maxTokens').value) || 100,
+    concurrency: Math.max(1, parseInt($('concurrency').value) || 1),
+    intervalMs: Math.max(0, parseInt($('intervalMs').value) || 0),
+    costLimit: parseFloat($('costLimit').value) || Infinity,
+    prompt: $('prompt').value,
+  };
+}
+
+function log(msg, cls='') {
   const el = document.createElement('div');
   el.className = cls;
   el.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
   const box = $('log');
-  box.appendChild(el);
-  box.scrollTop = box.scrollHeight;
-  while (box.children.length > 100) box.removeChild(box.firstChild);
+  box.appendChild(el); box.scrollTop = box.scrollHeight;
+  while (box.children.length > 120) box.removeChild(box.firstChild);
 }
 
 function updateUI() {
   $('tokens').textContent = state.tokens.toLocaleString();
   $('cost').textContent = '$' + state.cost.toFixed(4);
   $('calls').textContent = state.calls.toLocaleString();
-
-  // 计算最近 5 秒的速率
   const now = Date.now();
-  state.recentTokens = state.recentTokens.filter(t => now - t.time < 5000);
-  const rate = state.recentTokens.reduce((s, t) => s + t.count, 0) / 5;
+  state.recent = state.recent.filter(t => now - t.time < 5000);
+  const rate = state.recent.reduce((s,t)=>s+t.count,0) / 5;
   $('rate').textContent = Math.round(rate).toLocaleString();
 }
 
-async function burnOnce() {
+async function burnOnce(c) {
   if (!state.running) return;
-
   try {
-    const res = await fetch(CONFIG.apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${CONFIG.apiKey}`,
-      },
+    const res = await fetch(c.apiUrl, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${c.apiKey}` },
       body: JSON.stringify({
-        model: CONFIG.model,
-        messages: [{ role: 'user', content: CONFIG.prompt }],
-        max_tokens: CONFIG.maxTokens,
+        model: c.model,
+        messages: [{ role:'user', content: c.prompt }],
+        max_tokens: c.maxTokens,
       }),
     });
-
     const data = await res.json();
+    if (data.error) { log(`❌ ${data.error.message}`, 'err'); stop(); return; }
 
-    if (data.error) {
-      log(`❌ ${data.error.message}`, 'err');
-      // 遇到错误自动停，避免疯狂重试
-      stop();
-      return;
-    }
+    const u = data.usage || {};
+    const inTok = u.prompt_tokens || 0;
+    const outTok = u.completion_tokens || 0;
+    const total = u.total_tokens || (inTok + outTok);
+    const cost = inTok/1e6*c.priceInput + outTok/1e6*c.priceOutput;
 
-    const usage = data.usage || {};
-    const inTok = usage.prompt_tokens || 0;
-    const outTok = usage.completion_tokens || 0;
-    const total = usage.total_tokens || (inTok + outTok);
-
-    const cost = (inTok / 1e6) * CONFIG.priceInput
-               + (outTok / 1e6) * CONFIG.priceOutput;
-
-    state.tokens += total;
-    state.cost += cost;
-    state.calls += 1;
-    state.recentTokens.push({ time: Date.now(), count: total });
-
+    state.tokens += total; state.cost += cost; state.calls += 1;
+    state.recent.push({ time: Date.now(), count: total });
     log(`✅ +${total} tokens (in:${inTok} out:${outTok}) $${cost.toFixed(5)}`, 'ok');
     updateUI();
-  } catch (e) {
-    log(`❌ ${e.message}`, 'err');
-    stop();
-  }
+
+    // 到达花费上限，自动停
+    if (state.cost >= c.costLimit) {
+      log(`🛑 达到花费上限 $${c.costLimit}，自动停止`, 'err');
+      stop();
+    }
+  } catch (e) { log(`❌ ${e.message}`, 'err'); stop(); }
 }
 
 function loop() {
   if (!state.running) return;
-  // 并发发射
-  for (let i = 0; i < CONFIG.concurrency; i++) {
-    burnOnce();
-  }
-  setTimeout(loop, CONFIG.intervalMs);
+  const c = cfg();
+  for (let i = 0; i < c.concurrency; i++) burnOnce(c);
+  setTimeout(loop, c.intervalMs);
 }
 
 function start() {
-  if (!CONFIG.apiKey || CONFIG.apiKey.includes('你的key')) {
-    alert('请先在代码里填入你的 API Key！');
-    return;
-  }
+  const c = cfg();
+  if (!c.apiKey) { alert('请先填 API Key'); return; }
+  if (!c.apiUrl || !c.model) { alert('请填 API 地址和模型'); return; }
+  if (!confirm(`即将开始烧钱\n模型：${c.model}\n并发：${c.concurrency}\n上限：$${c.costLimit}\n\n确认已设置消费上限？`)) return;
+
   state.running = true;
   $('toggle').textContent = '⏸ 停止焚烧';
   $('toggle').classList.add('active');
@@ -283,12 +275,10 @@ function stop() {
 }
 
 $('toggle').onclick = () => state.running ? stop() : start();
-
 $('reset').onclick = () => {
   stop();
-  state = { running: false, tokens: 0, cost: 0, calls: 0, recentTokens: [] };
-  $('log').innerHTML = '';
-  updateUI();
+  state = { running:false, tokens:0, cost:0, calls:0, recent:[] };
+  $('log').innerHTML = ''; updateUI();
 };
 
 updateUI();
